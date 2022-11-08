@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,11 +20,14 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 public class screen2 extends AppCompatActivity {
@@ -31,6 +36,7 @@ public class screen2 extends AppCompatActivity {
     Uri image;
     FirebaseStorage storage;
     StorageReference storageReference;
+    StorageReference copyRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +66,9 @@ public class screen2 extends AppCompatActivity {
         if (resultCode == RESULT_OK && data != null){
             Log.i("tag","ok");
             image = data.getData();
-            imageView.setImageURI(image);
             uploadPic();
+
+
 
         }else{
             Log.i("tag","not ok");
@@ -73,12 +80,17 @@ public class screen2 extends AppCompatActivity {
         pd.setTitle("uploading Image...");
         pd.show();
         final String randomKey = UUID.randomUUID().toString();
-        StorageReference ref = storageReference.child("images/"+randomKey);
+        Log.i("tag",randomKey);
+        StorageReference ref = storageReference.child("images/"+randomKey+".png");
+        Log.i("tag",ref.toString());
+        copyRef =  FirebaseStorage.getInstance().getReference("images/"+randomKey+".png");
+        Log.i("tag",copyRef.toString());
         ref.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 pd.dismiss();
                 Snackbar.make(findViewById(android.R.id.content),"Image Uploaded.", Snackbar.LENGTH_LONG).show();
+                loadFile();
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -94,5 +106,21 @@ public class screen2 extends AppCompatActivity {
                 pd.setMessage((int) progressPercent +"%");
             }
         });
+
+
+    }
+    private void loadFile(){
+        try {
+            File local_file = File.createTempFile("tempFile",".jpg");
+            copyRef.getFile(local_file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(local_file.getAbsolutePath());
+                    imageView.setImageBitmap(bitmap);
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
