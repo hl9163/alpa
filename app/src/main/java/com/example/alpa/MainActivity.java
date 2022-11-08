@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     EditText email;
     EditText password;
     String str_email, str_password;
+    boolean wantToLogIn = false;
+
     Intent si;
 
 
@@ -41,8 +45,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void go(View view) {
+        wantToLogIn = false;
         str_email = email.getText().toString().trim();
         str_password = password.getText().toString().trim();
+        if (str_email.isEmpty() || str_password.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(str_email).matches()){
+            Toast.makeText(MainActivity.this, "something is missing or not valid!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        mAuth.signInWithEmailAndPassword(str_email,str_password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(MainActivity.this, "user already exist", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        });
         mAuth.createUserWithEmailAndPassword(str_email,str_password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
@@ -63,6 +81,32 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+    }
+    public void logIn(View view) {
+        wantToLogIn = true;
+        str_email = email.getText().toString().trim();
+        str_password = password.getText().toString().trim();
+        if (str_email.isEmpty() || str_password.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(str_email).matches()){
+            Toast.makeText(MainActivity.this, "something is missing or not valid!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        mAuth.signInWithEmailAndPassword(str_email,str_password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
+                    if (wantToLogIn){
+                        Toast.makeText(MainActivity.this, "welcome!", Toast.LENGTH_LONG).show();
+
+                    }
+                }
+            }
+        });
+
+    }
+
+    public void isExist(){
+
 
     }
 
@@ -100,4 +144,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
+
 }
