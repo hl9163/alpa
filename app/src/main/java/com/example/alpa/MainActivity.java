@@ -66,18 +66,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if( task.isSuccessful()){
-                            user man = new user(str_email,str_password);
-                            FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .setValue(man).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()){
-                                        Toast.makeText(MainActivity.this, "good", Toast.LENGTH_LONG).show();
-                                    }else{
-                                        Toast.makeText(MainActivity.this, "not good", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
+                            Toast.makeText(MainActivity.this, "good", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
